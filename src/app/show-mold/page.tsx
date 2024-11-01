@@ -1,20 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { calculateMoldSize, Mold, Product } from './moldCalculator';
+import { calculateMoldPrice, calculateMoldSize } from './moldCalculator';
+import { Mold, Product, ProductDimensions } from './type';
 
 export default function MoldTest() {
+  const [loading, setLoading] = useState(false);
   const [inputJson, setInputJson] = useState<string>('');
-  const [products, setProducts] = useState<Product[]>([]);
+  const [moldMaterial, setMoldMaterial] = useState<string>('');
+  const [productDimensions, setProductDimensions] = useState<
+    ProductDimensions[]
+  >([]);
   const [moldLayout, setMoldLayout] = useState<Mold | null>(null);
+
+  const [moldPrice, setMoldPrice] = useState<number>(0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputJson(e.target.value);
   };
 
   const extractDimensions = (
-    products: any[] //定义类型
-  ): Array<Pick<Product, 'length' | 'width' | 'height'>> => {
+    products: Product[] //定义类型
+  ): Array<Pick<ProductDimensions, 'length' | 'width' | 'height'>> => {
     return products.map((item) => ({
       length: item.dimensions.length,
       width: item.dimensions.width,
@@ -29,8 +36,9 @@ export default function MoldTest() {
       const parsedProducts = parsedData.products;
       console.log('parsedProducts: ', parsedProducts);
       const dimensionsArray = extractDimensions(parsedProducts);
-
-      setProducts(dimensionsArray);
+      //获取模具的材料
+      setMoldMaterial(parsedData.mold.moldMaterial);
+      setProductDimensions(dimensionsArray);
       alert('JSON parsed ok.');
     } catch (error) {
       console.log(error);
@@ -38,17 +46,27 @@ export default function MoldTest() {
     }
   };
 
-  const calculate = () => {
-    if (products.length === 0) {
+  const calculate = async () => {
+    if (productDimensions.length === 0) {
       alert('No products to calculate. Please input some products.');
       return;
     }
-    const result = calculateMoldSize(products);
-    setMoldLayout(result);
+    try {
+      setLoading(true);
+      const result = calculateMoldSize(productDimensions, moldMaterial);
+      const price = await calculateMoldPrice(result);
+      setMoldLayout(result);
+      setMoldPrice(price);
+    } catch (error) {
+      console.log(error);
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex-col w-1/2 items-center mx-auto">
+    <div className="flex-col w-1/2 items-center mx-auto min-h-screen relative">
       <h1>Mold Layout Calculator</h1>
       <textarea
         rows={10}
@@ -71,17 +89,20 @@ export default function MoldTest() {
       {moldLayout && (
         <div>
           <p>
-            Minimum mold size: {moldLayout.moldLength} x {moldLayout.moldWidth}{' '}
-            = {moldLayout.moldLength * moldLayout.moldWidth} mm²
+            Minimum mold size: {moldLayout.dimensions.length} x{' '}
+            {moldLayout.dimensions.width} ={' '}
+            {moldLayout.dimensions.length * moldLayout.dimensions.width} mm²
           </p>
-          <p>Minimum mold height: {moldLayout.moldHeight} mm</p>
+          <p>Minimum mold height: {moldLayout.dimensions.height} mm</p>
           <p>
             Mold Volume:{' '}
-            {moldLayout.moldWidth *
-              moldLayout.moldLength *
-              moldLayout.moldHeight}{' '}
+            {moldLayout.dimensions.width *
+              moldLayout.dimensions.length *
+              moldLayout.dimensions.height}{' '}
             mm³
           </p>
+          <p>Mold Price: {moldPrice} </p>
+
           {/* <p>productSpacing: {moldLayout.productSpacing} mm</p>
           <p>moldSpacing: {moldLayout.moldSpacing} mm</p>
           <h1>layout:</h1>
@@ -104,6 +125,11 @@ export default function MoldTest() {
                 </div>
               );
             })} */}
+        </div>
+      )}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+          <div className="text-xl text-gray-700">Loading...</div>
         </div>
       )}
     </div>

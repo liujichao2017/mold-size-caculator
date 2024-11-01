@@ -1,0 +1,55 @@
+{
+  "unit": "mm",
+  "products": [
+    {
+      "productId": 1,
+      "dimensions": {
+        "length": 200,
+        "width": 60,
+        "height": 20,
+        "volume": 24000
+      },
+      "productMaterial": "ABS"
+    },
+    {
+      "productId": 2,
+      "dimensions": {
+        "length": 180,
+        "width": 80,
+        "height": 10,
+        "volume": 18000
+      },
+      "productMaterial": "ABS"
+    },
+    {
+      "productId": 3,
+      "dimensions": {
+        "length": 220,
+        "width": 60,
+        "height": 20,
+        "volume": 26000
+      },
+      "productMaterial": "ABS"
+    },
+    {
+      "productId": 4,
+      "dimensions": {
+        "length": 150,
+        "width": 70,
+        "height": 30,
+        "volume": 31500
+      },
+      "productMaterial": "ABS"
+    }
+  ],
+  "mold": {
+    "dimensions": {
+      "length": 550,
+      "width": 400,
+      "height": 300
+    },
+    "cavityCount": 4,
+    "moldMaterial": "NAK80",
+    "weight": 2000
+  }
+}
