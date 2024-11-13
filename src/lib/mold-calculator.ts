@@ -229,7 +229,7 @@ class MoldCalculator {
 
   private checkInnerMargin(layout: ProductDimensions[][], maxLength: number, maxWidth: number): boolean {
     if (!layout?.length) return true;
-
+    if(maxLength === Infinity || maxWidth === Infinity) return false;
     console.log("\n=== 开始检查布局间距 ===");
     console.log("最大允许长度:", maxLength);
 
@@ -254,7 +254,7 @@ class MoldCalculator {
         const totalLength = elementsSum + spacingSum;
         console.log("第一行总长度:", totalLength, "(元素总长:", elementsSum, "+ 间距总和:", spacingSum, ")");
         
-        if (totalLength > maxLength) {
+        if (totalLength + this.calculateMargin(totalLength) > maxLength) {
           console.log("❌ 第一行超出最大长度");
           return false;
         }
@@ -297,7 +297,7 @@ class MoldCalculator {
         }
       }
 
-      if (rowTotalLength > maxLength) {
+      if (rowTotalLength + this.calculateMargin(rowTotalLength) > maxLength) {
         console.log(`❌ 第 ${rowIndex + 1} 行超出最大长度: ${rowTotalLength} > ${maxLength}`);
         return false;
       }
@@ -405,9 +405,9 @@ class MoldCalculator {
       const { maxLength, maxWidth } = calculateDimensions(currentLayout);
       
       //增加一个函数检查当前布局是否上下左右的间距都满足要求
-      // if(!this.checkInnerMargin(currentLayout, maxLength, maxWidth)){
-      //   return;
-      // }
+      if(!this.checkInnerMargin(currentLayout, maxLength, maxWidth)){
+        return;
+      }
 
       const currentArea = maxLength * maxWidth;
       
