@@ -229,6 +229,7 @@ class MoldCalculator {
 
   private checkInnerMargin(layout: ProductDimensions[][], maxLength: number, maxWidth: number): boolean {
     if (!layout?.length) return true;
+<<<<<<< HEAD
     if(maxLength === Infinity || maxWidth === Infinity) return false;
     console.log("\n=== 开始检查布局间距 ===");
     console.log("最大允许长度:", maxLength);
@@ -305,6 +306,53 @@ class MoldCalculator {
     }
 
     console.log("\n✅ 所有行间距检查通过");
+=======
+
+    console.log("\n=== 开始检查间距 ===");
+    console.log("布局:", layout.map(row => 
+      row.map(item => `${item.length}x${item.width}`))
+    );
+
+    // 检查每一行与下一行的间距
+    for (let rowIndex = 0; rowIndex < layout.length - 1; rowIndex++) {
+      const currentRow = layout[rowIndex];
+      const nextRow = layout[rowIndex + 1];
+
+      // 计算当前行的总长度
+      const currentRowLength = this.calculateRowLengthNew(currentRow);
+      const nextRowLength = this.calculateRowLengthNew(nextRow);
+      
+      console.log(`\n检查第${rowIndex + 1}行和第${rowIndex + 2}行:`, {
+        currentRow: currentRow.map(item => `${item.length}x${item.width}`),
+        nextRow: nextRow.map(item => `${item.length}x${item.width}`),
+        currentRowLength,
+        nextRowLength
+      });
+
+      // 检查每个元素与下一行的垂直间距
+      for (const currentItem of currentRow) {
+        for (const nextItem of nextRow) {
+          const requiredSpacing = this.calculateSpacing(currentItem.width + nextItem.width);
+          const actualSpacing = this.calculateColumnLengthNew([currentItem, nextItem]) - 
+                              (currentItem.width + nextItem.width);
+
+          console.log("检查元素间距:", {
+            current: `${currentItem.length}x${currentItem.width}`,
+            next: `${nextItem.length}x${nextItem.width}`,
+            required: requiredSpacing,
+            actual: actualSpacing
+          });
+
+          if (actualSpacing < requiredSpacing) {
+            console.log('❌ 垂直间距不符合要求');
+            return false;
+          }
+        }
+      }
+    }
+
+    console.log("✅ 所有间距检查通过");
+>>>>>>> 192c4d9f80a25cc466337e02dc2ba1c757dd898c
     return true;
   }
 
@@ -386,7 +434,11 @@ class MoldCalculator {
       remainingProducts: typeof productsWithMetrics,
       currentDepth = 0
     ) => {
+<<<<<<< HEAD
       // 验���布局的有效性
+=======
+      // 验证布局的有效性
+>>>>>>> 192c4d9f80a25cc466337e02dc2ba1c757dd898c
       if (!currentLayout.every(row => row && Array.isArray(row) && row.every(Boolean))) {
         console.warn('Invalid layout detected:', currentLayout);
         return;
@@ -397,6 +449,7 @@ class MoldCalculator {
         return;
       }
 
+<<<<<<< HEAD
       
 
       // 放宽搜索深度
@@ -404,11 +457,20 @@ class MoldCalculator {
       
       const { maxLength, maxWidth } = calculateDimensions(currentLayout);
       
+=======
+>>>>>>> 192c4d9f80a25cc466337e02dc2ba1c757dd898c
       //增加一个函数检查当前布局是否上下左右的间距都满足要求
       if(!this.checkInnerMargin(currentLayout, maxLength, maxWidth)){
         return;
       }
 
+<<<<<<< HEAD
+=======
+      // 放宽搜索深度
+      if (currentDepth > 50) return;
+      
+      const { maxLength, maxWidth } = calculateDimensions(currentLayout);
+>>>>>>> 192c4d9f80a25cc466337e02dc2ba1c757dd898c
       const currentArea = maxLength * maxWidth;
       
       if (currentArea >= minArea) return;
