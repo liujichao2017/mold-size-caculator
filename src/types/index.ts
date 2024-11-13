@@ -15,6 +15,18 @@ export const exchangeRateSchema = z.object({
 // User input schema
 export const userInputSchema = z.object({
   jsonInput: z.string().min(1, "JSON input is required"),
+  email: z.string()
+    .refine(val => val === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+      message: "Invalid email address"
+    })
+    .optional()
+    .or(z.literal('')),
+  phone: z.string()
+    .refine(val => val === '' || /^1[3-9]\d{9}$/.test(val), {
+      message: "Please enter a valid Chinese mobile number"
+    })
+    .optional()
+    .or(z.literal('')),
 });
 
 // Base schemas
@@ -22,7 +34,31 @@ const dimensionsSchema = z.object({
   length: z.number(),
   width: z.number(),
   height: z.number(),
+  volume: z.number().optional(),
+  productMaterial:z.string().optional(),
+  isRotated: z.boolean().optional(),
 });
+
+// 1. Export the schema
+export const DimensionsSchemaWithPrice = dimensionsSchema.extend({
+  processingCost: z.number(),
+  finalPrice: z.number(),
+  materialPrice: z.number(),
+  weight: z.number(),
+});
+
+// 2. Add type export
+export type DimensionsWithPrice = z.infer<typeof DimensionsSchemaWithPrice>;
+
+const dimensionsWithLayoutSchema = z.object({
+  length: z.number(),
+  width: z.number(),
+  height: z.number(),
+  bottom: z.number().optional(),
+  right: z.number().optional(),
+});
+
+const TwoDimensionalProductLayoutSchema = z.array(z.array(dimensionsWithLayoutSchema));
 
 const dimensionsWithVolumeSchema = dimensionsSchema.extend({
   volume: z.number(),
@@ -42,7 +78,12 @@ export const moldSchema = z.object({
   dimensions: dimensionsSchema,
   weight: z.number(),
   cavityCount: z.number(),
-  moldMaterial: z.enum(moldMaterialList.map(m => m.name) as [string, ...string[]]),
+  moldMaterial: z.string(),
+  maxRowLength: z.number().optional(),
+  maxColumnLength: z.number().optional(),
+  verticalMargin: z.number().optional(),
+  horizontalMargin: z.number().optional(),
+  //bestLayout: dimensionsWithLayoutSchema
 });
 
 // Machine schema
@@ -62,6 +103,18 @@ export const quoteSchema = z.object({
 });
 
 export const mockQuoteSchema = quoteSchema;
+
+export const ResultSchema = z.object({
+  success: z.boolean(),
+  error: z.string().optional(),
+  mold: moldSchema.optional(),
+  moldWeight: z.number().optional(),
+  moldPrice: z.number().optional(),
+  productLayout: z.string().optional(),
+  productPrice: z.string().optional(),
+});
+
+export type CalculationResult = z.infer<typeof ResultSchema>;
 
 // Server response schema
 export const serverResponseSchema = z.object({
@@ -87,6 +140,10 @@ export const serverResponseSchema = z.object({
 
 // Type exports using Zod inference
 export type ProductDimensions = z.infer<typeof productDimensionsSchema>;
+export type ProductDimensionsWithLayout = z.infer<typeof dimensionsWithLayoutSchema>;
+
+export type ProductTwoDdimensionsWithLayout = z.infer<typeof TwoDimensionalProductLayoutSchema>;
+
 export type Product = z.infer<typeof productSchema>;
 export type Mold = z.infer<typeof moldSchema>;
 export type Machine = z.infer<typeof machineSchema>;
@@ -100,6 +157,7 @@ export const validators = {
   validateExchangeRate: (data: unknown) => exchangeRateSchema.parse(data),
   validateProduct: (data: unknown) => productSchema.parse(data),
   validateMold: (data: unknown) => moldSchema.parse(data),
+  validateProductLayout: (data: unknown) => TwoDimensionalProductLayoutSchema.parse(data),
   validateQuote: (data: unknown) => quoteSchema.parse(data),
   validateServerResponse: (data: unknown) => serverResponseSchema.parse(data),
   validateUserInput: (data: unknown) => userInputSchema.parse(data),

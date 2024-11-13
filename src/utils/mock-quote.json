@@ -1,55 +1,50 @@
 {
-  "unit": "mm",
-  "products": [
-    {
-      "productId": 1,
-      "dimensions": {
-        "length": 200,
-        "width": 60,
-        "height": 20,
-        "volume": 24000
+    "unit": "mm",
+    "products": [
+        {
+            "productId": 1,
+            "dimensions": {
+                "length": 300,
+                "width": 100,
+                "height": 105,
+                "volume": 525000
+            },
+            "productMaterial": "PC"
+        },
+        {
+          "productId": 2,
+          "dimensions": {
+              "length": 250,
+              "width": 100,
+              "height": 85,
+              "volume": 340000
+          },
+          "productMaterial": "PC"
       },
-      "productMaterial": "ABS"
-    },
-    {
-      "productId": 2,
-      "dimensions": {
-        "length": 180,
-        "width": 80,
-        "height": 10,
-        "volume": 18000
-      },
-      "productMaterial": "ABS"
-    },
-    {
-      "productId": 3,
-      "dimensions": {
-        "length": 220,
-        "width": 60,
-        "height": 20,
-        "volume": 26000
-      },
-      "productMaterial": "ABS"
-    },
-    {
-      "productId": 4,
-      "dimensions": {
-        "length": 150,
-        "width": 70,
-        "height": 30,
-        "volume": 31500
-      },
-      "productMaterial": "ABS"
+      {
+          "productId": 3,
+          "dimensions": {
+              "length": 230,
+              "width": 180,
+              "height": 90,
+              "volume": 252000
+          },
+          "productMaterial": "PC"
+      }
+    ],
+    "mold": {
+        "dimensions": {
+            "length": 540,
+            "width": 475,
+            "height": 415
+        },
+        "cavityCount": 3,
+        "moldMaterial": "718H",
+        "weight": 835.61,
+        "price": 8867.4,
+        "runningFee": 13000,
+        "differPrice": 1535.0619718309858,
+        "differPriceOld": 10899,
+        "fee":21797.5
     }
-  ],
-  "mold": {
-    "dimensions": {
-      "length": 550,
-      "width": 400,
-      "height": 300
-    },
-    "cavityCount": 4,
-    "moldMaterial": "NAK80",
-    "weight": 2000
   }
-}

@@ -3,6 +3,7 @@ import { Results } from "@/components/mold/results"
 import * as React from 'react'
 import { MoldCalculator } from "@/components/mold/calculator"
 import { Separator } from "@/components/ui/separator"
+import { LayoutDisplay } from "@/components/mold/layout-display"
 
 interface ShowMoldPageProps {
   searchParams: Record<string, string | string[] | undefined>
@@ -13,11 +14,16 @@ export default function ShowMoldPage({
 }: ShowMoldPageProps) {
   const params = React.use(searchParams as unknown as Promise<typeof searchParams>)
   const moldParam = (params?.mold ?? null) as string | null
-  const priceParam = (params?.price ?? null) as string | null
+  const priceParam = (params?.moldPrice ?? null) as string | null
+  const weightParam = (params?.moldWeight ?? null) as string | null
+
+  const productLayout = (params?.productLayout ?? null)  as string | null
+  const productPrice = (params?.productPrice ?? null)  as string | null
   
   const mold = moldParam ? (JSON.parse(moldParam) as Record<string, unknown>) : null
-  const price = priceParam ? parseFloat(priceParam) : null
-
+  const moldPrice = priceParam ? parseFloat(priceParam) : null
+  const moldWeight = weightParam ? parseFloat(weightParam) : null
+  
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container max-w-3xl py-12 mx-auto">
@@ -33,12 +39,21 @@ export default function ShowMoldPage({
         <div className="space-y-8">
           <MoldCalculator />
           
-          {mold && price && (
+          {mold && moldPrice && (
             <>
               <Separator className="my-8" />
               <Results 
                 mold={validators.validateMold(mold)} 
-                price={price} 
+                moldWeight={moldWeight ?? 0}
+                moldPrice={moldPrice ?? 0}
+                productPrice={productPrice ?? '0'}
+              />
+              <Separator className="my-8" />
+              <LayoutDisplay
+                mold={validators.validateMold(mold)} 
+                layout={productLayout}
+                
+                
               />
             </>
           )}
