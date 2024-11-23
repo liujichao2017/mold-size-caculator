@@ -413,6 +413,32 @@ const moldStructureHeightRules = [
   { maxHeight: 210, height: 490 },
 ] as const;
 
+const productGroupLengthDifference = 200;  //定义产品分组方案的长度差
+const productGroupWidthDifference = 200;  //定义产品分组方案的宽度差
+const productGroupHeightDifference = 100;  //定义产品分组方案的高度差
+
+const productGroupLengthLimit = 300;  //定义产品分组方案的长度限制
+const productGroupWidthLimit = 300;  //定义产品分组方案的宽度限制
+
+const productGroupQuantityLimit = 5000;  //定义产品分组方案的数量限制
+
+const productGroupWeightMinLimit = 100;  //定义最小的产品重量标准
+const productGroupWeightDifferenceMinLimit = 50;  //定义产品重量差的最小值  
+
+const productGroupWeightDifferenceList = [
+  { minWeight: 100, difference: 100 },
+  { minWeight: 300, difference: 150 },
+  { minWeight: 600, difference: 200 },
+  { minWeight: 900, difference: 250 },
+  { minWeight: 1200, difference: 300 },
+  { minWeight: 1500, difference: 350 },
+  { minWeight: 1800, difference: 400 },
+  { minWeight: 2100, difference: 450 },
+  { minWeight: 2400, difference: 500 },
+  { minWeight: 2700, difference: 550 },
+  { minWeight: 3000, difference: 0 },
+];  //定义产品重量差的最大值
+
 export {
   materialList,
   moldMaterialList,

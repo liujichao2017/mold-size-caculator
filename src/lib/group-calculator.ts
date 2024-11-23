@@ -1,12 +1,12 @@
 import {
   borderSpaceRules,
   marginSpaceRules,
-  moldMaterialList,
+  // moldMaterialList,
   moldStructureHeightRules,
   fixedLossRate,
   defaultMoldMaterialDensity,
 } from "./constants";
-import { getExchangeRate } from "./get-exchange-rate";
+// import { getExchangeRate } from "./get-exchange-rate";
 import type {  Mold,  ProductDimensions, ProductDimensionsWithLayout } from "@/types";
 import { getMachinePriceSettingList, getMaterialPriceSettingList, getMoldConstantSettingList, getMoldOperatingExpenseSettingList, getMoldPriceDifferSettingList } from "./get-calulator-price-data";
 import { type MoldPriceDifferSettingItem } from "./validations/mold-price-differ";
@@ -15,7 +15,7 @@ import { type MoldOperatingExpenseSettingItem } from "./validations/mold-operati
 import { type MoldConstantSettingItem } from "./validations/mold-constant";
 import { type MaterialPriceSettingItem } from "./validations/material";
 
-class MoldCalculator {
+class GroupCalculator {
   private readonly weightDiffer = 1000;
   private readonly maxDimension = 1000;
   private readonly maxRatio = 2.5;
@@ -33,7 +33,6 @@ class MoldCalculator {
   private readonly machinePriceSettingList: MachinePriceSettingItem[];
 
   constructor(products: ProductDimensions[], moldMaterial: string, 
-    exchangeRate: number, 
     moldPriceDifferSettingList: MoldPriceDifferSettingItem[], 
     moldOperatingExpenseSettingList: MoldOperatingExpenseSettingItem[], 
     moldConstantSettingList: MoldConstantSettingItem[],
@@ -43,7 +42,7 @@ class MoldCalculator {
     this.products = products;
     this.moldMaterial = moldMaterial;
     // this.materialIndex = moldMaterialList.findIndex(mold => mold.name === moldMaterial);
-    this.exchangeRate = 7.1; //exchangeRate
+    this.exchangeRate = moldConstantSettingList.find(item => item.constantName === "exchangeRate")?.constantValue ?? 7.1; //exchangeRate
     this.moldPriceDifferSettingList = moldPriceDifferSettingList;
     this.moldOperatingExpenseSettingList = moldOperatingExpenseSettingList;
     this.moldConstantSettingList = moldConstantSettingList;
@@ -358,7 +357,7 @@ class MoldCalculator {
         maxLength = Math.max(maxLength, rowLength + rowMargin);
       }
 
-      // 计算宽度
+      // 计算宽��
       const columnCount = Math.max(...layout.map(row => row.length));
       for (let j = 0; j < columnCount; j++) {
         // const column = layout.map(row => row[j]).filter(Boolean);
@@ -386,7 +385,7 @@ class MoldCalculator {
       remainingProducts: typeof productsWithMetrics,
       currentDepth = 0
     ) => {
-      // 验���布局的有效性
+      // 验布局的有效性
       if (!currentLayout.every(row => row && Array.isArray(row) && row.every(Boolean))) {
         console.warn('Invalid layout detected:', currentLayout);
         return;
@@ -617,25 +616,66 @@ class MoldCalculator {
     const machiningCost = this.calculateMachiningCost(maxHeight, totalWeight);
 
     // 3. 计算每个产品的加工费
-    const materialGroups = productsWithMaterialPrice.reduce((acc, product) => {
-      if (!product.productMaterial) return acc;
-      acc[product.productMaterial] = (acc[product.productMaterial] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const productsWithProcessingCost = productsWithMaterialPrice.map(product => ({
-      ...product,
-      processingCost: product.productMaterial ? machiningCost / materialGroups[product.productMaterial] : 0
-    }));
-
-    // 4. 计算最终价格
-
     const profitCoefficient = this.moldConstantSettingList.find(rule => rule.constantName === "profitCoefficient")?.constantValue ?? 1.5;
-    const finalProducts = productsWithProcessingCost.map(product => ({
-      ...product,
-      finalPrice: ((product.materialPrice + product.processingCost) * profitCoefficient ?? 1.5) / this.exchangeRate
-    }));
 
+    let remainingProducts = productsWithMaterialPrice.map(p => ({
+      ...p,
+      remainingQuantity: p.productQuantity ?? 0,
+      processingCost: [] as Array<{ productMakingQuantity: number; productMakingPrice: number; 
+        productSinglePrice: number; productTotalPrice: number }>
+    }));
+  
+    while (remainingProducts.some(p => p.remainingQuantity > 0)) {
+      // 找出当前剩余数量中的最小值
+      const minQuantity = Math.min(
+        ...remainingProducts
+          .filter(p => p.remainingQuantity > 0)
+          .map(p => p.remainingQuantity)
+      );
+  
+      // 计算当前还有多少种产品需要处理
+      const activeProductCount = remainingProducts.filter(p => p.remainingQuantity > 0).length;
+      
+      // 计算当前组的单个产品加工费
+      const currentGroupMakingPrice = machiningCost / activeProductCount;
+  
+      // 为所有还有剩余数量的产品添加加工费记录
+      remainingProducts = remainingProducts.map(p => {
+        if (p.remainingQuantity > 0) {
+          return {
+            ...p,
+            remainingQuantity: p.remainingQuantity - minQuantity,
+            processingCost: [
+              ...p.processingCost,
+              {
+                productMakingQuantity: minQuantity,
+                productMakingPrice: currentGroupMakingPrice,
+                productSinglePrice: (p.materialPrice + currentGroupMakingPrice) * profitCoefficient / this.exchangeRate,
+                productTotalPrice: (p.materialPrice + currentGroupMakingPrice) * profitCoefficient / this.exchangeRate * minQuantity
+              }
+            ]
+          };
+        }
+        return p;
+      });
+    }
+
+    
+    // console.log("remainingProducts:", JSON.stringify(remainingProducts));
+    // 4. 计算最终价格
+    
+    const finalProducts = remainingProducts.map(product => {
+      const finalPrice = product.processingCost.reduce((total, cost) => {
+        // const price = ((product.materialPrice + cost.productMakingPrice) * profitCoefficient / this.exchangeRate) * cost.productMakingQuantity;
+        return total + (cost.productTotalPrice ?? 0);
+      }, 0);
+
+      return {
+        ...product,
+        finalPrice
+      };
+    });
+    // console.log("finalProducts:",finalProducts);
     return finalProducts;
   }
 
@@ -712,21 +752,21 @@ class MoldCalculator {
   }
 }
 
-export async function createMoldCalculator(
+export async function createGroupCalculator(
   products: ProductDimensions[],
   moldMaterial: string
-): Promise<MoldCalculator> {
-  const exchangeRate = await getExchangeRate({
-    originCurrency: "USD",
-    targetCurrency: "CNY",
-  });
+): Promise<GroupCalculator> {
+  // const exchangeRate = await getExchangeRate({
+  //   originCurrency: "USD",
+  //   targetCurrency: "CNY",
+  // });
 
   const moldPriceDifferSettingList = await getMoldPriceDifferSettingList();
   const moldOperatingExpenseSettingList = await getMoldOperatingExpenseSettingList();
   const moldConstantSettingList = await getMoldConstantSettingList();
   const materialPriceSettingList = await getMaterialPriceSettingList();
   const machinePriceSettingList = await getMachinePriceSettingList();
-  return new MoldCalculator(products, moldMaterial, exchangeRate, 
+  return new GroupCalculator(products, moldMaterial, 
     moldPriceDifferSettingList, 
     moldOperatingExpenseSettingList, 
     moldConstantSettingList, 

@@ -5,6 +5,7 @@ const prisma = new PrismaClient()
 const INITIAL_DATA = {
   moldConstants: [
     {  constantName: 'profitCoefficient', constantValue: 1.5, constantDescription: '利润系数' },
+    {  constantName: 'exchangeRate', constantValue: 7.1, constantDescription: '美元汇率' },
     // ... 其他初始数据
   ],
   // 其他表的初始数据

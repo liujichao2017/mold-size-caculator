@@ -37,6 +37,8 @@ const dimensionsSchema = z.object({
   volume: z.number().optional(),
   productMaterial:z.string().optional(),
   isRotated: z.boolean().optional(),
+  productQuantity: z.number().optional(),
+  productWeight: z.number().optional(),
 });
 
 // 1. Export the schema

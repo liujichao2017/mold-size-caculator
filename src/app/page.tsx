@@ -10,6 +10,12 @@ export default function Home() {
             模具报价测试
           </a>
         </Link>
+
+        <Link href="/product-group" legacyBehavior>
+          <a className="text-2xl h-10 text-blue-500 border border-gray-300 p-2 w-full">
+           产品分组测试
+          </a>
+        </Link>
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a

@@ -83,7 +83,7 @@ export default function MoldConstantPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">利润系数</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">其他常量</h1>
         {/* <Button onClick={() => setOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           新增差价设置
